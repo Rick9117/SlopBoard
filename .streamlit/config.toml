@@ -1,0 +1,11 @@
+# SlopBoard theme. Changed from the Settings page.
+
+[theme]
+base = "dark"
+primaryColor = "#10B981"
+backgroundColor = "#0E1117"
+secondaryBackgroundColor = "#1A1D26"
+textColor = "#EAF5F0"
+
+[browser]
+gatherUsageStats = false

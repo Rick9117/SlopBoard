@@ -1,0 +1,6 @@
+streamlit
+pandas
+altair
+psutil
+pywin32 ; platform_system == "Windows"
+setproctitle

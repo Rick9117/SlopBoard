@@ -1,0 +1,19 @@
+# Runtime data (personal; SlopBoard regenerates all of this).
+# Covers app_activity.csv, slopboard.csv, learned_categories.csv,
+# dashboard.log / tracker.log / launcher.log, stop.flag, and the
+# private browser profile used for the app window (~200 MB).
+data/*.csv
+data/*.log
+data/*.flag
+data/.browser-profile/
+
+# Python
+__pycache__/
+*.pyc
+
+# Editor / OS junk
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store
