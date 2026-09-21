@@ -92,18 +92,26 @@ if not common.has_slopper_data(new_folder):
 st.subheader("Desktop tracker")
 st.caption("Records the app in your active (focused) window every few seconds. "
            "Apps running in the background aren't counted.")
-if tracker_running():
+
+# The tracker takes a few seconds to actually exit after we ask it to, so we
+# remember that we've asked (tracker_stopping) and immediately show it as not
+# running, rather than leaving the green "running" message up in the meantime.
+running = tracker_running()
+if not running:
+    st.session_state.tracker_stopping = False      # it's really down now
+
+if running and not st.session_state.get("tracker_stopping"):
     st.success("Tracker is running in the background.")
     if st.button("Stop tracking", type="primary"):
         (common.DATA_DIR / "stop.flag").touch()
-        st.toast("App tracking has stopped.")
-        st.info("App tracking has stopped. It will save and exit within a few "
-                "seconds. Restart it by double-clicking **run_slopboard.bat**.")
+        st.session_state.tracker_stopping = True
+        st.toast("Stopping the tracker…")
+        st.rerun()
 else:
-    st.warning("Tracker is not running.")
-    st.caption("Start everything by double-clicking **run_slopboard.bat**, or run "
-               "just the tracker with `py tracker/app_tracker.py` "
-               "(add `--simulate` to test without Windows).")
+    st.error("Tracker is currently NOT running.")
+    st.caption("Start it again by launching SlopBoard, or run just the tracker "
+               "with `py tracker/app_tracker.py` (add `--simulate` to test "
+               "without Windows).")
 
 # Show how much the tracker has recorded today, if anything.
 if common.APP_CSV.exists():

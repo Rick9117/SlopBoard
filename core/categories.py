@@ -68,6 +68,8 @@ BUILTIN_RULES: dict[str, str] = {
     "battle.net": GAMING,
     "battlenet": GAMING,
     "wow": GAMING,                 # World of Warcraft
+    "warcraft": GAMING,            # Warcraft III (and other Warcraft titles)
+    "war3": GAMING,                # Warcraft III classic executable name
     "runelite": GAMING,            # Old School RuneScape
     "gonefishing": GAMING,
     "gonefishin": GAMING,

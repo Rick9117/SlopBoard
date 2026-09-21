@@ -11,6 +11,11 @@ data/.browser-profile/
 __pycache__/
 *.pyc
 
+# Build output from build.py (the self-contained release; shipped via Releases)
+dist/
+build/
+*.zip
+
 # Editor / OS junk
 .vscode/
 .idea/

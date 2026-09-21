@@ -21,15 +21,22 @@ all data lives in plain **CSV files** on disk.
 It works with built-in **sample data** on first run, so you can see the whole
 dashboard before installing Slopper or starting the tracker.
 
-## Run it (the easy way)
+## Get SlopBoard (no coding needed)
 
-Double-click **`run_slopboard.bat`**. It starts the desktop tracker and the
-dashboard in the background — no console window — and opens the dashboard in its
-own app window (no address bar or tabs). This is the way to hand it to someone
-non-technical.
+Download the latest **`SlopBoard-*.zip`** from the
+[Releases page](https://github.com/Rick9117/SlopBoard/releases), unzip it
+anywhere, and double-click **`SlopBoard.bat`**. That's it — the download already
+contains its own copy of Python and every library, so nothing needs to be
+installed. It starts the tracker and dashboard in the background and opens the
+dashboard in its own app window.
 
-If nothing opens or you want to see what's happening, run **`debug_slopboard.bat`**
-instead: it starts the dashboard visibly and prints any errors.
+## Run it from the source
+
+If you cloned or downloaded the source instead, just double-click
+**`SlopBoard.bat`**. The first time, it offers to set itself up: if you have
+Python installed it downloads the runtime and libraries automatically; if you
+don't, it points you to the ready-to-run download above. After that it launches
+straight away.
 
 ## Run it (manually, for development)
 
@@ -37,12 +44,13 @@ instead: it starts the dashboard visibly and prints any errors.
 py -m streamlit run slopboard.py
 ```
 
-This opens in a normal browser tab at `http://localhost:8501` and does **not**
-start the tracker. Use `run_slopboard.bat` for the full app experience.
+This opens in a normal browser tab at `http://localhost:8501`, prints any errors
+to the terminal (handy for troubleshooting), and does **not** start the tracker.
+Use `SlopBoard.bat` for the full app experience.
 
 ## Run the desktop tracker on its own
 
-`run_slopboard.bat` starts it for you, but you can also run it directly:
+`SlopBoard.bat` starts it for you, but you can also run it directly:
 
 ```bash
 py tracker/app_tracker.py            # real tracking (Windows)
@@ -60,6 +68,29 @@ Windows). In the project folder:
 ```bash
 py -m pip install -r requirements.txt
 ```
+
+## Building a self-contained release (no Python needed)
+
+To share SlopBoard with someone who doesn't have Python, build a self-contained
+folder that bundles its own copy of Python and every dependency. On Windows, in
+the project folder:
+
+```bash
+py build.py
+```
+
+This produces `dist/SlopBoard/` — one folder containing a private `runtime/`
+(Python + all libraries), the app code, and a `SlopBoard.bat` to double-click —
+and zips it to `dist/SlopBoard-<version>.zip`. Anyone can unzip that and run
+SlopBoard without installing Python or anything else (Windows already ships with
+Edge for the app window). Upload the zip to a GitHub **Release** rather than the
+repo, since it's large (a few hundred MB) and is a generated artifact.
+
+Notes: the build must run on Windows, and it's easiest to build in a Python
+3.12/3.13 environment if a dependency doesn't have wheels for the very latest
+Python yet — the end user gets whichever version you build with. Unsigned
+executables may trigger a Windows SmartScreen warning for people who download
+them; that's normal for an unsigned hobby project.
 
 ## Settings & features
 
@@ -101,8 +132,8 @@ App tracker CSV ───┘      (+ categories)
 SlopBoard/
 ├── slopboard.py          # main entry / router (sets up the sidebar menu)
 ├── launcher.pyw          # starts tracker + dashboard, opens the app window
-├── run_slopboard.bat     # double-click this to launch (no console window)
-├── debug_slopboard.bat   # visible launch that prints errors, for troubleshooting
+├── SlopBoard.bat         # double-click this to launch (no console window)
+├── build.py              # builds the self-contained release (py build.py)
 ├── requirements.txt
 ├── .streamlit/
 │   └── config.toml       # theme (written by the Settings page)
@@ -126,3 +157,8 @@ SlopBoard/
     ├── *.log             # launcher / dashboard / tracker logs
     └── .browser-profile/ # private browser profile for the app window
 ```
+
+`build.py` also creates a `dist/` folder (git-ignored): `dist/SlopBoard/` is the
+finished self-contained app, and `dist/SlopBoard-<version>.zip` is that same
+folder zipped for a GitHub Release. You don't open the zip — you upload it, and
+whoever downloads it unzips it and runs the `SlopBoard.bat` inside.

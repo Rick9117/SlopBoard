@@ -53,9 +53,16 @@ def enable() -> bool:
         import pythoncom
         from win32com.client import Dispatch
 
-        exe = Path(sys.executable)
-        windowless = exe.with_name("pythonw.exe")
-        base = str(windowless if windowless.exists() else exe)
+        # In a self-contained build, launch from the bundled runtime inside the
+        # SlopBoard folder so auto-start doesn't depend on any external Python.
+        # In a plain source checkout there's no runtime/, so use this Python.
+        bundled = ROOT / "runtime" / "pythonw.exe"
+        if bundled.exists():
+            base = str(bundled)
+        else:
+            exe = Path(sys.executable)
+            windowless = exe.with_name("pythonw.exe")
+            base = str(windowless if windowless.exists() else exe)
         # Use a copy named so Task Manager shows "SlopBoard tracker" not pythonw.
         target = named_interpreter(base, "SlopBoard tracker")
         script = str(ROOT / "tracker" / "app_tracker.py")

@@ -45,24 +45,31 @@ def slopper_missing_note() -> str:
 MIN_DISPLAY_SECONDS: int = 60
 
 # ---------------------------------------------------------------- colours
-# Web platforms get their real brand colours; desktop apps get a palette.
-WEB_COLORS: dict[str, str] = {
-    "YouTube": "#FF0000",
-    "TikTok": "#00C4B4",
-    "Instagram": "#E1306C",
-    "Facebook": "#1877F2",
-    "X (Twitter)": "#1D1D1D",
-}
-APP_PALETTE: list[str] = ["#5B8DEF", "#22A699", "#1DB954", "#8E7CC3", "#4B5563",
-                          "#5865F2", "#E8A13A", "#D6604D", "#6D9F71", "#B084CC"]
+# Bars grow and change colour with how much time was spent, like the Slopper
+# extension: a little time is a short green bar, and as it fills it shifts green
+# -> yellow -> orange, turning red once the bar is completely full at 2 hours.
+# So "good" (low) reads green and small, "bad" (high) reads red and full.
+FULL_BAR_MINUTES: int = 120        # 2 hours = a completely full (red) bar
 
 
-def color_for(name: str, source: str) -> str:
-    """Return a colour for a name: brand colour for web, palette colour for apps."""
-    if source == "web" and name in WEB_COLORS:
-        return WEB_COLORS[name]
-    # Deterministic pick, so an app keeps the same colour between runs.
-    return APP_PALETTE[hash(name) % len(APP_PALETTE)]
+def _bar_style(minutes: float) -> tuple[float, str]:
+    """Return (width_percent, colour) for a bar from the time spent.
+
+    Width is proportional to the time, filling up at FULL_BAR_MINUTES (2h). The
+    colour is keyed to how full the bar is: green up to a third, yellow to two
+    thirds, orange up to full, and red once it's full (2h or more).
+    """
+    fill = minutes / FULL_BAR_MINUTES * 100      # % of the way to full (can exceed 100)
+    width = max(min(fill, 100.0), 2.0)           # clamp to the bar; keep a visible sliver
+    if fill >= 100:
+        colour = "#EF4444"            # red - full (2h+)
+    elif fill >= 67:
+        colour = "#F97316"            # orange
+    elif fill >= 33:
+        colour = "#EAB308"            # yellow
+    else:
+        colour = "#22C55E"            # green - just a little
+    return width, colour
 
 
 # ---------------------------------------------------------------- data loading
@@ -227,16 +234,19 @@ def week_label(monday: pd.Timestamp | str, index: int | None = None) -> str:
 
 # ---------------------------------------------------------------- rendering
 def _bar_html(label: str, minutes: float, width_pct: float, colour: str) -> str:
-    """Return the HTML for a single coloured bar row."""
+    """Return the HTML for a single bar row: label, coloured bar, then the time.
+
+    The time sits to the right of the bar (not inside it) so it stays readable
+    even when the bar is only a short green sliver.
+    """
     return f"""
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:9px;">
       <div style="width:190px;font-size:14px;font-weight:600;">{label}</div>
       <div style="flex:1;height:30px;background:#262A36;border-radius:7px;overflow:hidden;">
-        <div style="width:{width_pct}%;height:100%;background:{colour};border-radius:7px;
-                    display:flex;align-items:center;padding-left:10px;color:#fff;
-                    font-size:13px;font-weight:700;white-space:nowrap;">
-          {fmt_minutes(minutes)}
-        </div>
+        <div style="width:{width_pct}%;height:100%;background:{colour};border-radius:7px;"></div>
+      </div>
+      <div style="width:64px;text-align:right;font-size:13px;font-weight:700;">
+        {fmt_minutes(minutes)}
       </div>
     </div>"""
 
@@ -246,22 +256,19 @@ def render_app_bars(apps: pd.DataFrame, max_rows: int = 10) -> str:
 
     `apps` has columns display, key, minutes, source (see apps_in_category).
     Desktop apps are labelled "Display - (process.exe)"; web platforms just show
-    their name. Bar widths are relative to the biggest app shown.
+    their name. Each bar's width and colour come from its time (see _bar_style).
     """
     if apps.empty:
         return "<p style='color:#8FB3A6;'>No data yet.</p>"
 
-    top = apps.head(max_rows)
-    biggest = top["minutes"].max()
     bars: list[str] = []
-    for _, row in top.iterrows():
+    for _, row in apps.head(max_rows).iterrows():
         # Show the process name in brackets for desktop apps only.
         if row["source"] == "app" and row["key"] != row["display"]:
             label = f"{row['display']} - ({row['key']})"
         else:
             label = row["display"]
-        width = max(2, (row["minutes"] / biggest) * 100)
-        colour = color_for(row["display"], row["source"])
+        width, colour = _bar_style(row["minutes"])
         bars.append(_bar_html(label, row["minutes"], width, colour))
     return "".join(bars)
 
