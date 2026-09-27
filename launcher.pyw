@@ -10,7 +10,7 @@ This launcher is careful about the server: it checks that the port actually
 SlopBoard server before starting a fresh one. That avoids the "localhost refused
 the connection" problem caused by a half-dead server holding the port.
 
-Launched by SlopBoard.bat, which calls it with pythonw so no console appears.
+Started via SlopBoard.exe (which calls it with pythonw), so no console appears.
 """
 
 import socket

@@ -1,116 +1,108 @@
-# SlopBoard
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/slopboard-logo-dark.png">
+  <img src="assets/slopboard-logo.png" alt="SlopBoard" width="420">
+</picture>
 
-A local dashboard for your screen-time habits. It combines two sources:
+**A local, private dashboard for your screen-time habits — version 0.3.**
 
-- **Web slop** — the JSON files exported by the [Slopper](https://chromewebstore.google.com/detail/slopper-brainrotslop-stop/agdjpbclibfpgkmhjmhjmopogmmnmmac) Chrome extension ([source](https://github.com/Rick9117/slopper)) — YouTube Shorts, TikTok, Reels, etc.
-- **Desktop apps** — a small tracker that records the app in your **active (focused) window**; apps left running in the background aren't counted
+SlopBoard shows where your time actually goes, day by day and week by week, by
+combining two sources:
 
-…and shows where your time actually goes, per day and per week. Everything runs
-locally on your machine. There are no accounts, no servers, and no SQL database —
-all data lives in plain **CSV files** on disk.
+- **Web slop** — the JSON files exported by the [Slopper](https://chromewebstore.google.com/detail/slopper-brainrotslop-stop/agdjpbclibfpgkmhjmhjmopogmmnmmac) browser extension ([source](https://github.com/Rick9117/slopper)): YouTube Shorts, TikTok, Reels, and the like.
+- **Desktop apps** — a small tracker that records the app in your **active (focused) window**. Apps left running in the background don't count.
+
+Everything runs locally on your machine. No accounts, no servers, no database —
+your data lives in plain CSV files on disk.
+
+## Get SlopBoard
+
+There are two ways in, depending on what you want:
+
+- **Just want to use it?** Download the **installer** from the
+  [latest release](https://github.com/Rick9117/SlopBoard/releases/latest). 
+  Run it, choose where to install, and SlopBoard sets itself up like a normal Windows program —
+  a Start-menu entry, an optional desktop shortcut, and its own uninstaller. Nothing
+  else needs to be installed; the download already includes everything it needs.
+- **Want the code?** You're looking at it. This repository is the source, for
+  developers who'd like to build or change SlopBoard themselves — see
+  [Running from source](#running-from-source) below.
 
 ## Screens
 
-- **Overview** — this week's web slop: totals, top platforms, time per day
-- **Everything** — desktop apps and web slop together, including how much of your
-  browser time was slop, plus a category breakdown
-- **Weekly** — daily bars for any week you have data for
-- **Settings** — choose the Slopper folder, start/stop the tracker, turn on
-  auto-start, and switch between dark and light themes
+- **Overview** — this week's web slop: totals, top platforms, and time per day.
+- **Everything** — desktop apps and web slop together, how much of your browsing
+  was slop, plus a category breakdown.
+- **Weekly** — daily bars for any week you have data for.
+- **Settings** — choose the Slopper folder, start or stop the tracker, turn on
+  auto-start, and switch between dark and light themes.
 
-It works with built-in **sample data** on first run, so you can see the whole
+On first launch it shows built-in **sample data**, so you can explore the whole
 dashboard before installing Slopper or starting the tracker.
 
-## Get SlopBoard (no coding needed)
+## Running from source
 
-Download the latest **`SlopBoard-*.zip`** from the
-[Releases page](https://github.com/Rick9117/SlopBoard/releases), unzip it
-anywhere, and double-click **`SlopBoard.bat`**. That's it — the download already
-contains its own copy of Python and every library, so nothing needs to be
-installed. It starts the tracker and dashboard in the background and opens the
-dashboard in its own app window.
-
-## Run it from the source
-
-If you cloned or downloaded the source instead, just double-click
-**`SlopBoard.bat`**. The first time, it offers to set itself up: if you have
-Python installed it downloads the runtime and libraries automatically; if you
-don't, it points you to the ready-to-run download above. After that it launches
-straight away.
-
-## Run it (manually, for development)
-
-```bash
-py -m streamlit run slopboard.py
-```
-
-This opens in a normal browser tab at `http://localhost:8501`, prints any errors
-to the terminal (handy for troubleshooting), and does **not** start the tracker.
-Use `SlopBoard.bat` for the full app experience.
-
-## Run the desktop tracker on its own
-
-`SlopBoard.bat` starts it for you, but you can also run it directly:
-
-```bash
-py tracker/app_tracker.py            # real tracking (Windows)
-py tracker/app_tracker.py --simulate # fake data, any OS, for testing
-```
-
-Only one tracker runs at a time — launching it again exits quietly, so your data
-can't be double-counted.
-
-## Requirements & install
-
-Requires Python 3, plus Chrome or Edge for the app window (both are standard on
-Windows). In the project folder:
+SlopBoard is a [Streamlit](https://streamlit.io) dashboard plus a small desktop
+tracker. Running from source needs Python 3 on Windows (the tracker and the app
+window are Windows-only). Install the dependencies once:
 
 ```bash
 py -m pip install -r requirements.txt
 ```
 
-## Building a self-contained release (no Python needed)
-
-To share SlopBoard with someone who doesn't have Python, build a self-contained
-folder that bundles its own copy of Python and every dependency. On Windows, in
-the project folder:
+Then run the dashboard directly (opens in a browser tab; this does **not** start
+the tracker):
 
 ```bash
-py build.py
+py -m streamlit run slopboard.py
 ```
 
-This produces `dist/SlopBoard/` — one folder containing a private `runtime/`
-(Python + all libraries), the app code, and a `SlopBoard.bat` to double-click —
-and zips it to `dist/SlopBoard-<version>.zip`. Anyone can unzip that and run
-SlopBoard without installing Python or anything else (Windows already ships with
-Edge for the app window). Upload the zip to a GitHub **Release** rather than the
-repo, since it's large (a few hundred MB) and is a generated artifact.
+You can also run the tracker on its own:
 
-Notes: the build must run on Windows, and it's easiest to build in a Python
-3.12/3.13 environment if a dependency doesn't have wheels for the very latest
-Python yet — the end user gets whichever version you build with. Unsigned
-executables may trigger a Windows SmartScreen warning for people who download
-them; that's normal for an unsigned hobby project.
+```bash
+py tracker/app_tracker.py            # real tracking (Windows)
+py tracker/app_tracker.py --simulate # fake data, any OS, for a quick test
+```
+
+Only one tracker runs at a time — launching it again exits quietly, so your data
+can't be double-counted.
+
+For a one-click launch of the full app (tracker + dashboard + window), double-click
+**`SlopBoard.bat`**. If you've built the self-contained runtime with `py build.py`,
+it uses that (so it stays self-contained and doesn't touch your system Python);
+otherwise it falls back to the Python you have installed. For everyday use, though,
+open the installed SlopBoard from the Start menu rather than running from source.
+
+## Building a release
+
+`py build.py` bundles a private copy of Python and every dependency into
+`dist/SlopBoard/` — a folder that runs on any Windows PC with no Python installed
+— compiles the `SlopBoard.exe` launcher, and zips the result. `SlopBoard.iss` then
+wraps that folder into `SlopBoard-Setup.exe` using
+[Inno Setup](https://jrsoftware.org/isinfo.php). Both are large, generated
+artifacts, so they're shared through GitHub **Releases** rather than committed to
+the repository.
+
+A couple of practical notes: the build must run on Windows, and it's easiest in a
+Python 3.12/3.13 environment if a dependency doesn't yet have wheels for the very
+newest Python — whoever installs SlopBoard gets whichever version you build with.
+Unsigned executables show a one-time Windows SmartScreen prompt ("More info → Run
+anyway"); that's expected for an unsigned hobby project.
 
 ## Settings & features
 
-- **Slopper folder** — where SlopBoard reads Slopper's exported files. If no
-  Slopper data is found, the sidebar and Settings show a link to install the
-  extension.
-- **Desktop tracker** — start it by launching SlopBoard, or stop it from
-  Settings. Every few seconds it records the app in your active (focused)
-  window, so time counts only while an app is the one you're actually using —
-  a game or app left running in the background isn't counted. It never counts
-  SlopBoard's own window.
+- **Slopper folder** — where SlopBoard reads Slopper's exported files. If none are
+  found, the sidebar and Settings show a link to install the extension.
+- **Desktop tracker** — records the app in your active (focused) window every few
+  seconds, so time counts only while you're actually using something. A game or
+  app left running in the background isn't counted, and SlopBoard never counts its
+  own window.
 - **Start tracking automatically** — adds a shortcut to your Windows Startup
   folder so the tracker runs on boot. It's an ordinary shortcut you can see and
-  delete yourself; nothing is hidden in the registry. Because the tracker is a
-  singleton, the boot copy and a manual launch never produce two trackers.
-- **Task Manager names** — the dashboard and tracker show up as `SlopBoard` and
-  `SlopBoard tracker` (in the Details tab) instead of `pythonw`. This is done by
-  launching through renamed copies of the Python interpreter, created next to
-  your Python install. To disable it, set `FRIENDLY_TASK_MANAGER_NAMES = False`
-  at the top of `launcher.pyw`.
+  remove; nothing is hidden in the registry. The tracker is a singleton, so the
+  boot copy and a manual launch never produce two trackers.
+- **Task Manager names & icon** — the dashboard and tracker appear as `SlopBoard`
+  and `SlopBoard tracker`, with the SlopBoard icon, instead of `python`. To turn
+  this off, set `FRIENDLY_TASK_MANAGER_NAMES = False` at the top of `launcher.pyw`.
 
 ## How it works
 
@@ -120,21 +112,23 @@ Slopper JSON files ┐
 App tracker CSV ───┘      (+ categories)
 ```
 
-- `tracker/app_tracker.py` — samples the foreground window, writes app CSV
-- `core/data_loader.py` — reads both sources, combines them, writes the combined CSV
-- `core/categories.py` — maps app/platform names to categories (Work, Media, …)
-- `core/common.py` — shared paths, colours, caching, and chart helpers
-- `slopboard.py` + `pages/` — the four dashboard pages
+- `tracker/app_tracker.py` — samples the foreground window and writes the app CSV.
+- `core/data_loader.py` — reads both sources, combines them, writes the combined CSV.
+- `core/categories.py` — maps app and platform names to categories (Work, Media, …).
+- `core/common.py` — shared paths, colours, caching, and chart helpers.
+- `slopboard.py` and `pages/` — the four dashboard pages.
 
 ## Project layout
 
 ```
 SlopBoard/
 ├── slopboard.py          # main entry / router (sets up the sidebar menu)
+├── slopboard_app.py      # compiled to SlopBoard.exe by build.py (PyInstaller)
 ├── launcher.pyw          # starts tracker + dashboard, opens the app window
-├── SlopBoard.bat         # double-click this to launch (no console window)
 ├── build.py              # builds the self-contained release (py build.py)
+├── SlopBoard.iss         # Inno Setup script → SlopBoard-Setup.exe
 ├── requirements.txt
+├── assets/               # app icon, tab icon, and README logos
 ├── .streamlit/
 │   └── config.toml       # theme (written by the Settings page)
 ├── tracker/
@@ -150,15 +144,8 @@ SlopBoard/
 │   ├── Everything.py
 │   ├── Weekly.py
 │   └── Settings.py
-└── data/                 # all data lives here — created at runtime, git-ignored
-    ├── app_activity.csv  # written by the tracker
-    ├── slopboard.csv     # the combined dataset
-    ├── learned_categories.csv  # remembered app → category choices
-    ├── *.log             # launcher / dashboard / tracker logs
-    └── .browser-profile/ # private browser profile for the app window
+└── data/                 # created at runtime, git-ignored (CSVs, logs, profile)
 ```
 
-`build.py` also creates a `dist/` folder (git-ignored): `dist/SlopBoard/` is the
-finished self-contained app, and `dist/SlopBoard-<version>.zip` is that same
-folder zipped for a GitHub Release. You don't open the zip — you upload it, and
-whoever downloads it unzips it and runs the `SlopBoard.bat` inside.
+`build.py` also creates `dist/` and the installer lands in `installer/`; both are
+git-ignored, since they're large generated artifacts shared through Releases.

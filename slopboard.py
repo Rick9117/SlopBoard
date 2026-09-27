@@ -10,6 +10,8 @@ defines the sidebar menu. Each page lives in the pages/ folder.
 
 import streamlit as st
 
+from pathlib import Path
+
 from core import common
 
 # Give this process a friendly name in Task Manager, if setproctitle is present.
@@ -19,7 +21,22 @@ try:
 except Exception:
     pass
 
-st.set_page_config(page_title="SlopBoard", page_icon="📊", layout="wide")
+# Use the SlopBoard mark as the browser-tab icon (path relative to this file so
+# it works wherever the app runs); fall back to an emoji if it's missing.
+icon = Path(__file__).parent / "assets" / "slopboard_icon.png"
+try:
+    from PIL import Image
+    page_icon = Image.open(icon) if icon.exists() else "📊"
+except Exception:
+    page_icon = "📊"
+
+st.set_page_config(page_title="SlopBoard", page_icon=page_icon, layout="wide")
+
+# Show the logo. Use a path relative to THIS file (not the working directory) so
+# it's found however SlopBoard is launched, and skip it quietly if it's missing.
+logo = Path(__file__).parent / "assets" / "slopboard-logo-dark.png"
+if logo.exists():
+    st.image(str(logo), width=280)
 
 # --- Styling: bigger sidebar menu text, and a "SlopBoard" title above it ---
 # The title is drawn with a ::before on the nav container, so it always sits

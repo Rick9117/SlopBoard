@@ -86,7 +86,7 @@ if new_folder != current_folder:
 
 # Point the user to the extension if this folder has no Slopper data.
 if not common.has_slopper_data(new_folder):
-    st.markdown(common.slopper_missing_note(), unsafe_allow_html=True)
+    common.render_slopper_prompt(in_sidebar=False, key="get_slopper_settings")
 
 # --- Tracker status and Stop button ---
 st.subheader("Desktop tracker")

@@ -3,6 +3,8 @@ Shared helpers used by every page: file paths, the colour map, the cached
 data-loading function, and small formatting/aggregation/rendering utilities.
 """
 
+import subprocess
+import webbrowser
 from pathlib import Path
 
 import pandas as pd
@@ -31,13 +33,42 @@ def has_slopper_data(folder: str) -> bool:
     return bool(data_loader.load_slopper_folder(folder))
 
 
-def slopper_missing_note() -> str:
-    """HTML for a red note prompting the user to install the Slopper extension."""
-    return (f"<div style='color:#F87171;font-size:0.9rem;line-height:1.4;'>"
-            f"No Slopper data found — "
-            f"<a href='{SLOPPER_EXTENSION_URL}' target='_blank' "
-            f"style='color:#F87171;text-decoration:underline;'>"
-            f"get the Slopper extension here</a>.</div>")
+def _find_browser() -> str | None:
+    """Path to Chrome, then Edge, if installed - for opening external links.
+
+    Extensions install from Chromium browsers, so we prefer those over the
+    system default. Returns None if neither is found.
+    """
+    options = [
+        Path.home() / "AppData/Local/Google/Chrome/Application/chrome.exe",
+        Path(r"C:\Program Files\Google\Chrome\Application\chrome.exe"),
+        Path(r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"),
+        Path(r"C:\Program Files\Microsoft\Edge\Application\msedge.exe"),
+        Path(r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"),
+    ]
+    return next((str(p) for p in options if p.exists()), None)
+
+
+def render_slopper_prompt(in_sidebar: bool, key: str) -> None:
+    """Show a red "no Slopper data" note with a button that opens the Slopper
+    extension page in Chrome (or Edge, or the system default browser).
+
+    A button is used instead of a plain link so the backend can pick the browser
+    - a link would open in whatever the system default is, and can be mishandled
+    inside the dashboard's own app window (which showed "page not found").
+    """
+    area = st.sidebar if in_sidebar else st
+    area.markdown("<span style='color:#F87171;'>No Slopper data found.</span>",
+                  unsafe_allow_html=True)
+    if area.button("Get the Slopper extension", key=key):
+        browser = _find_browser()
+        try:
+            if browser:
+                subprocess.Popen([browser, SLOPPER_EXTENSION_URL])
+            else:
+                webbrowser.open(SLOPPER_EXTENSION_URL)
+        except Exception:
+            webbrowser.open(SLOPPER_EXTENSION_URL)
 
 # Hide apps you barely touched. The tracker samples every few seconds, so brief
 # system windows (Search, Task Manager, an Explorer click) would otherwise clutter
@@ -287,7 +318,7 @@ def sidebar_status(frame: pd.DataFrame, used_sample: bool, folder: str) -> None:
     # Nudge the user to install Slopper if we have no real web-slop data.
     has_web = (not used_sample) and (not frame.empty) and (frame["source"] == "web").any()
     if not has_web:
-        st.sidebar.markdown(slopper_missing_note(), unsafe_allow_html=True)
+        render_slopper_prompt(in_sidebar=True, key="get_slopper_sidebar")
 
     if st.sidebar.button("🔄 Refresh data"):
         get_data.clear()
