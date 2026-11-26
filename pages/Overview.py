@@ -1,19 +1,17 @@
 """
-The Overview page: this week's summary.
+The Overview page: today at a glance.
 
-Shows the most-watched platform and most-used app, the top categories, and a
-per-day chart of time spent.
+Shows today's slop time, the most-watched platform and most-used app, the top
+categories, and a breakdown of today's apps grouped by category.
 """
 
-import altair as alt
-import pandas as pd
 import streamlit as st
 
 from core import common, categories
 
 
 def category_row_html(category: str, minutes: float) -> str:
-    """Return the HTML for one 'Top Categories' row: coloured name, time right."""
+    """Return the HTML for one 'Top categories' row: coloured name, time right."""
     colour = categories.color_for_category(category)
     return f"""
     <div style="display:flex;justify-content:space-between;align-items:center;
@@ -24,35 +22,12 @@ def category_row_html(category: str, minutes: float) -> str:
     </div>"""
 
 
-def daily_chart(daily: pd.Series) -> alt.Chart:
-    """Build the 'time per day' bar chart (hours on the axis, capped at 24h)."""
-    data = daily.reset_index()
-    data.columns = ["Date", "Minutes"]
-    data["Minutes"] = data["Minutes"].clip(upper=1440)        # cap at 24 hours
-    data["Hours"] = (data["Minutes"] / 60).round(2)
-    data["Time"] = data["Minutes"].apply(common.fmt_minutes)   # readable tooltip
-    data["Label"] = pd.to_datetime(data["Date"]).dt.strftime("%a %d %b")
-
-    return (
-        alt.Chart(data)
-        .mark_bar(color="#10B981", cornerRadiusTopLeft=4, cornerRadiusTopRight=4)
-        .encode(
-            x=alt.X("Label:N", sort=list(data["Label"]),
-                    axis=alt.Axis(labelAngle=0, title=None)),
-            y=alt.Y("Hours:Q", axis=alt.Axis(title="Hours")),
-            tooltip=[alt.Tooltip("Label:N", title="Day"),
-                     alt.Tooltip("Time:N", title="Time")],
-        )
-        .properties(height=280)
-    )
-
-
-# --- Load this week's data ---
+# --- Load today's data ---
 folder = st.session_state.get("slopper_folder", str(common.DEFAULT_SLOPPER_FOLDER))
 data, used_sample = common.get_data(folder)
 
 st.title("Overview")
-st.caption("Your habits this week (Monday – Sunday)")
+st.caption("Your habits today")
 
 # On first run there's no data, so point the user at Slopper.
 if used_sample:
@@ -62,22 +37,22 @@ if used_sample:
         f"web slop, and start the desktop tracker to track the apps you actively use."
     )
 
-this_week = common.filter_this_week(data)
-web_week = this_week[this_week["source"] == "web"]
-app_week = this_week[this_week["source"] == "app"]
+today = common.filter_today(data)
+web_today = today[today["source"] == "web"]
+app_today = today[today["source"] == "app"]
 
-if this_week.empty:
-    st.info("No data for this week yet.")
+if today.empty:
+    st.info("No activity recorded today yet.")
     common.sidebar_status(data, used_sample, folder)
     st.stop()
 
-# --- Metrics: total slop, most-watched platform, most-used app ---
-slop_total = web_week["minutes"].sum()
-platforms = common.totals_by_display(web_week)
-apps = common.totals_by_display(app_week)
+# --- Metrics: slop today, most-watched platform, most-used app ---
+slop_total = web_today["minutes"].sum()
+platforms = common.totals_by_display(web_today)
+apps = common.totals_by_display(app_today)
 
 col1, col2, col3 = st.columns(3)
-col1.metric("Slop this week", common.fmt_minutes(slop_total))
+col1.metric("Slop today", common.fmt_minutes(slop_total))
 if not platforms.empty:
     col2.metric("Most-watched", platforms.index[0],
                 common.fmt_minutes(platforms.iloc[0]))
@@ -89,28 +64,23 @@ if not apps.empty:
 else:
     col3.metric("Most-used app", "—")
 
-# --- Top platforms (web slop, coloured bars) ---
-if not web_week.empty:
-    st.subheader("Top Platforms")
-    st.markdown(common.render_app_bars(common.apps_in_category(web_week, categories.SLOP)),
+# --- Top platforms (today's web slop, coloured bars) ---
+if not web_today.empty:
+    st.subheader("Top platforms")
+    st.markdown(common.render_app_bars(common.apps_in_category(web_today, categories.SLOP)),
                 unsafe_allow_html=True)
 
 # --- Top categories (apps + web) as name | time ---
-st.subheader("Top Categories")
-category_totals = common.category_totals_ordered(this_week)
+st.subheader("Top categories")
+category_totals = common.category_totals_ordered(today)
 if not category_totals:
     st.caption("No categories yet.")
 else:
     html = "".join(category_row_html(cat, mins) for cat, mins in category_totals)
     st.markdown(html, unsafe_allow_html=True)
 
-# --- Time per day ---
-st.subheader("Time per day")
-st.caption("Total time per day this week.")
-daily = common.daily_totals(web_week if not web_week.empty else this_week)
-if daily.empty:
-    st.caption("No daily data yet.")
-else:
-    st.altair_chart(daily_chart(daily), width="stretch")
+# --- Where the time went: apps grouped by category, Slop first ---
+st.subheader("Where the time went")
+common.render_apps_by_category(today, max_rows=10)
 
 common.sidebar_status(data, used_sample, folder)

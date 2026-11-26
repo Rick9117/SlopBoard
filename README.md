@@ -29,10 +29,10 @@ There are two ways in, depending on what you want:
 
 ## Screens
 
-- **Overview** — this week's web slop: totals, top platforms, and time per day.
-- **Everything** — desktop apps and web slop together, how much of your browsing
-  was slop, plus a category breakdown.
-- **Weekly** — daily bars for any week you have data for.
+- **Overview** — today at a glance: slop time, most-watched platform and
+  most-used app, top categories, and today's apps grouped by category.
+- **Date range** — daily bars for any week or month you have data for, with a
+  total, a daily average, and a category breakdown.
 - **Settings** — choose the Slopper folder, start or stop the tracker, turn on
   auto-start, and switch between dark and light themes.
 
@@ -140,9 +140,8 @@ SlopBoard/
 │   ├── startup.py        # the "start on boot" Startup-folder shortcut
 │   └── procname.py       # friendly Task Manager names
 ├── pages/
-│   ├── Overview.py
-│   ├── Everything.py
-│   ├── Weekly.py
+│   ├── Overview.py       # today at a glance
+│   ├── DateRange.py      # a chosen week or month, day by day
 │   └── Settings.py
 └── data/                 # created at runtime, git-ignored (CSVs, logs, profile)
 ```

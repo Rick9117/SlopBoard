@@ -157,13 +157,17 @@ def iso_week_number(day: pd.Timestamp | str) -> int:
     return int(pd.Timestamp(day).isocalendar().week)
 
 
-def filter_this_week(frame: pd.DataFrame) -> pd.DataFrame:
-    """Return only the rows whose date is in the current week (Mon-Sun)."""
+def month_start(day: pd.Timestamp | str) -> pd.Timestamp:
+    """Return the first day of the month the given date falls in."""
+    return pd.Timestamp(day).normalize().replace(day=1)
+
+
+def filter_today(frame: pd.DataFrame) -> pd.DataFrame:
+    """Return only the rows whose date is today."""
     if frame.empty:
         return frame
-    start = week_start(pd.Timestamp.today())
-    end = start + pd.Timedelta(days=7)
-    return frame[(frame["date"] >= start) & (frame["date"] < end)]
+    today = pd.Timestamp.today().normalize()
+    return frame[frame["date"].dt.normalize() == today]
 
 
 # ---------------------------------------------------------------- aggregation
@@ -261,6 +265,11 @@ def week_label(monday: pd.Timestamp | str, index: int | None = None) -> str:
 
     span = f"{long_date(monday)} – {long_date(sunday)}"
     return f"(Week {index}) {span}" if index is not None else span
+
+
+def month_label(first: pd.Timestamp | str) -> str:
+    """Return a readable label for a month, e.g. "January 2026"."""
+    return pd.Timestamp(first).strftime("%B %Y")
 
 
 # ---------------------------------------------------------------- rendering

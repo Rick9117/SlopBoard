@@ -73,8 +73,7 @@ if "slopper_folder" not in st.session_state:
 # The sidebar menu, in this exact order, with clean labels.
 pages = [
     st.Page("pages/Overview.py", title="Overview", icon="🏠", default=True),
-    st.Page("pages/Everything.py", title="Everything", icon="📊"),
-    st.Page("pages/Weekly.py", title="Weekly", icon="🗓"),
+    st.Page("pages/DateRange.py", title="Date range", icon="🗓"),
     st.Page("pages/Settings.py", title="Settings", icon="⚙"),
 ]
 
