@@ -1,7 +1,7 @@
 ; Inno Setup script for SlopBoard.
 
 #define AppName    "SlopBoard"
-#define AppVersion "0.3"
+#define AppVersion "0.4"
 #define AppExe     "SlopBoard.exe"
 #define AppURL     "https://rick9117.github.io/"
 

@@ -3,7 +3,7 @@
   <img src="assets/slopboard-logo.png" alt="SlopBoard" width="420">
 </picture>
 
-**A local, private dashboard for your screen-time habits — version 0.3.**
+**A local, private dashboard for your screen-time habits**
 
 SlopBoard shows where your time actually goes, day by day and week by week, by
 combining two sources:
